@@ -92,3 +92,46 @@ rob == /robotcam ==> sol;
 rob == /current_angle ==> sol;
 rob == /scored_point ==> sol;
 ```
+
+## Concepts You'll Need to Look Up
+
+Same deal as last module: we are deliberately not giving you the syntax. Your detection is a
+short pipeline, and each stage is one or two OpenCV calls:
+
+```
+frame (BGR) --> HSV --> binary mask --> blob --> pixel offset --> angle
+```
+
+1. **Getting the frame into OpenCV** — `cv_bridge`, covered by the two links in the
+   Architecture section above. `/robotcam` is `bgr8`; ask for that encoding explicitly.
+2. **Colour spaces** — thresholding in BGR breaks the moment lighting changes.
+   [Color spaces in OpenCV](https://learnopencv.com/color-spaces-in-opencv-cpp-python/)
+3. **Thresholding to a mask** —
+   [Thresholding Operations using inRange](https://docs.opencv.org/4.x/da/d97/tutorial_threshold_inRange.html).
+   Its C++ example is a complete six-trackbar HSV tuner; steal it and tune against the running
+   sim rather than guessing bounds.
+4. **Mask to a single x-coordinate** —
+   [image moments](https://learnopencv.com/find-center-of-blob-centroid-using-opencv-cpp-python/)
+   (simpler) or [contours](https://learnopencv.com/contour-detection-using-opencv-python-c/)
+   (robust to stray pixels, and gives you blob size).
+5. **Pixel offset to an angle** —
+   [Geometry of Image Formation](https://learnopencv.com/geometry-of-image-formation/), first
+   section only. Ignore the distortion and calibration material; this camera is ideal.
+
+Two workflow notes: `ros2 pkg create` will not wire up OpenCV for you, so you need
+`find_package(OpenCV REQUIRED)`, `OpenCV` in your `ament_target_dependencies`, and
+`<depend>libopencv-dev</depend>`. And when you are tuning thresholds, save one frame with
+`cv::imwrite` and iterate on the still image in a standalone program — a one-second loop
+instead of a `colcon build` and a sim restart every time.
+
+### Common mistakes
+
+| Symptom | Likely cause |
+| --- | --- |
+| Colours look inverted / blue and red swapped | OpenCV is **BGR**, not RGB. |
+| Hue values from an online colour picker don't work | OpenCV uses 0–179 for hue; halve them. |
+| Red is detected on only one side of the cube | Hue is a circle and red sits on the 0/180 seam. One range can't span it — look up `cv::bitwise_or`. |
+| Window is grey or never updates | Missing `cv::waitKey()` after `cv::imshow()`. |
+| Robot jerks to a wild angle occasionally | Divide-by-zero when the mask is empty. Check the pixel count before dividing. |
+| Mask is full of white speckle | Saturation/value lower bounds too low; look up morphological opening. |
+| Node lags behind the sim | Per-pixel `for` loops in the callback at 30 Hz. `moments` and `countNonZero` are one line and vectorized. |
