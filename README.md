@@ -38,10 +38,7 @@ cd TR-Autonomy-2/
 source /opt/ros/humble/setup.bash
 # python dislikes systemwide install, but ROS only works with system python so we set this ENV 
 export PIP_BREAK_SYSTEM_PACKAGES=1
-# this branch's package.xml doesn't declare these, so install them yourself
-python3 -m pip install pybullet opencv-python
-# `python-rospkg` in package.xml is a ROS1-era key that rosdep can't resolve on Humble
-rosdep install -i --from-path src --rosdistro humble -y --skip-keys python-rospkg
+rosdep install -i --from-path src --rosdistro humble -y
 colcon build
 # OPEN_NEW_TERMINAL AND NAVIGATE TO YOUR REPOSITORY
 source install/setup.bash
