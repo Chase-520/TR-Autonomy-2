@@ -45,6 +45,12 @@ source install/setup.bash
 ros2 run spinnyrobot spinnyrobot
 ```
 
+Create the package your solution will live in:
+``` bash
+cd TR-Autonomy-2/src/
+ros2 pkg create --build-type ament_cmake --dependencies rclcpp sensor_msgs std_msgs cv_bridge yoursolution
+```
+
 ### What is different on this branch
 
 This branch runs pybullet in `DIRECT` mode instead of `GUI` mode, so that it works without
