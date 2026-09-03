@@ -48,7 +48,7 @@ ros2 run spinnyrobot spinnyrobot
 Create the package your solution will live in:
 ``` bash
 cd TR-Autonomy-2/src/
-ros2 pkg create --build-type ament_cmake --dependencies rclcpp sensor_msgs std_msgs cv_bridge yoursolution
+ros2 pkg create yoursolution --build-type ament_cmake --dependencies rclcpp sensor_msgs std_msgs cv_bridge
 ```
 
 ### What is different on this branch
